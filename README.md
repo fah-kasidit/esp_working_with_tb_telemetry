@@ -25,7 +25,7 @@ Configure the following values in your code:
     - `{token}` can be obtained using the following command:
 
       ```bash 
-      curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{"username":"{your_thingsboard_username}", "password":"{your_thingsboard_password}"}' 'https://{your_thingsboard_server}/api/auth/login'
+      curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{"username":"{your_thingsboard_username}", "password":"{your_thingsboard_password}"}' 'https://{thingsboard_server}:{port}/api/auth/login'
       ```
 
 ## Testing
@@ -33,4 +33,9 @@ Configure the following values in your code:
 To test, run `main.cpp`. To update telemetry values, use the following command:
 
 ```bash
-curl -v -X POST --data '{"{what_value_you_want}": 100}' http://{your_thingsboard_server}/api/v1/{device_ID}/telemetry --header "Content-Type:application/json"
+curl -v -X POST --data '{"{value_name}": {value}' http://{thingsboard_server}:{port}/api/v1/{device_ID}/telemetry --header "Content-Type:application/json"
+```
+
+- Replace `{value_name}` and `{value}` with some data.
+- Replace `{thingsboard_server}`, `{port}` and `{device_ID}` with your ThingsBoard server details.
+  
