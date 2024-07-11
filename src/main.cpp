@@ -1,16 +1,42 @@
 #include <WiFi.h>
+#include <iostream>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
-
-String payload;
-int httpResponseCode;
-float distance;
 
 const char *ssid = "NDRS-Wongsawang";
 const char *password = "ndrs_2010";
 
-const char *url = "http://143.198.195.172:9090/api/plugins/telemetry/DEVICE/fe9a0f60-38ff-11ef-bff0-835a0b74444f/values/timeseries?keys=distance";
-const char *token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJmYWgua2FzaWRpdEBnbWFpbC5jb20iLCJ1c2VySWQiOiI1MGI2ZmUwMC0zOGU5LTExZWYtYmZmMC04MzVhMGI3NDQ0NGYiLCJzY29wZXMiOlsiVEVOQU5UX0FETUlOIl0sInNlc3Npb25JZCI6ImU2MDViNzIxLTlhMjItNDQ4NC04ZWE5LTJmMGJjODU0NWUyZCIsImlzcyI6InRoaW5nc2JvYXJkLmlvIiwiaWF0IjoxNzIwNjAwMzE3LCJleHAiOjE3MjA2ODY3MTcsImZpcnN0TmFtZSI6Ikthc2lkaXQiLCJsYXN0TmFtZSI6IlBvc2FwaGFuIiwiZW5hYmxlZCI6dHJ1ZSwiaXNQdWJsaWMiOmZhbHNlLCJ0ZW5hbnRJZCI6IjZhYjUwOWMwLTM4NjAtMTFlZi1iZmYwLTgzNWEwYjc0NDQ0ZiIsImN1c3RvbWVySWQiOiIxMzgxNDAwMC0xZGQyLTExYjItODA4MC04MDgwODA4MDgwODAifQ.ZRkFMpWgonTq-MsBOD7Mcw08HIzALRATaKeo18V5xnoZp-fvTemRTMI_x_EEtvBzT2sNZ4DQbxYituuoQfu4Jg";
+const char *tb_username = "fah.kasidit@gmail.com";
+const char *tb_password = "tni-ksd";
+
+const char *thingsboard_server = "http://143.198.195.172:9090";
+const char *device_id = "fe9a0f60-38ff-11ef-bff0-835a0b74444f";
+char url[256];
+char *token = NULL;
+
+const char *request_value[] = {"distance", "status"};
+String response_value[100];
+
+String payload;
+int http_response_code;
+int http_request_code;
+int n_request_value = 0;
+int temp_value = 0;
+
+
+int build_request_url()
+{
+  snprintf(url, sizeof(url), "%s/api/plugins/telemetry/DEVICE/%s/values/timeseries?keys=", thingsboard_server, device_id);
+  for (const auto &str : request_value)
+  {
+    strcat(url, str);
+    strcat(url, ",");
+    n_request_value++;
+  }
+  url[strlen(url) - 1] = '\0';
+
+  return n_request_value;
+}
 
 void connect_to_wifi()
 {
@@ -23,7 +49,43 @@ void connect_to_wifi()
   Serial.println("Connected to WiFi");
 }
 
-void fetch_distance(void *pvParameters)
+void fetch_token()
+{
+  HTTPClient http;
+  http.begin(String(thingsboard_server) + "/api/auth/login");
+  http.addHeader("Content-Type", "application/json");
+
+  // POST payload
+  StaticJsonDocument<200> loginJson;
+  loginJson["username"] = tb_username;
+  loginJson["password"] = tb_password;
+  serializeJson(loginJson, payload);
+  http_request_code = http.POST(payload);
+
+  // Just in case
+  if (token != NULL)
+  {
+    free(token);
+  }
+
+  if (http_request_code > 0)
+  {
+    String response = http.getString();
+    DynamicJsonDocument doc(1024);
+    deserializeJson(doc, response);
+
+    token = strdup(doc["token"].as<String>().c_str());
+    // Serial.println("\nToken received: " + String(token) + "\n");
+  }
+  else
+  {
+    Serial.print("Error getting token. HTTP error code: ");
+    Serial.println(http_request_code);
+  }
+  http.end();
+}
+
+void fetch_data(void *pvParameters)
 {
   for (;;)
   {
@@ -34,19 +96,24 @@ void fetch_distance(void *pvParameters)
       http.addHeader("Content-Type", "application/json");
       http.addHeader("X-Authorization", String("Bearer ") + token);
 
-      httpResponseCode = http.GET();
+      http_response_code = http.GET();
 
-      if (httpResponseCode > 0)
+      if (http_response_code > 0)
       {
         payload = http.getString();
-        // Serial.println("HTTP Response code: " + String(httpResponseCode));
+        // Serial.println("HTTP Response code: " + String(http_response_code));
         // Serial.println("Response payload: " + payload);
 
         DynamicJsonDocument doc(1024);
         deserializeJson(doc, payload);
 
-        distance = doc["distance"][0]["value"].as<float>();
-        Serial.println("Distance: " + String(distance));
+        for (temp_value = 0; temp_value < n_request_value; temp_value++)
+        {
+          response_value[temp_value] = doc[request_value[temp_value]][0]["value"].as<String>();
+          Serial.print(request_value[temp_value]);
+          Serial.println(": " + response_value[temp_value]);
+        }
+        Serial.println("");
       }
       else
       {
@@ -57,7 +124,6 @@ void fetch_distance(void *pvParameters)
     else
     {
       Serial.println("WiFi Disconnected");
-      connect_to_wifi();
     }
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
@@ -67,8 +133,10 @@ void setup()
 {
   Serial.begin(115200);
   connect_to_wifi();
+  build_request_url();
+  fetch_token();
 
-  xTaskCreate(fetch_distance, "Fetch Distance", 4096, NULL, 1, NULL);
+  xTaskCreate(fetch_data, "Fetch Data", 4096, NULL, 1, NULL);
 }
 
 void loop()
