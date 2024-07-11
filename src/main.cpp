@@ -13,7 +13,12 @@ const char *thingsboard_server = "http://143.198.195.172:9090";
 const char *device_id = "fe9a0f60-38ff-11ef-bff0-835a0b74444f";
 
 const char *request_value[] = {"distance", "status"};
-String response_value[100];
+
+// Iterate through the request_value array
+for (int i = 0; i < sizeof(request_value) / sizeof(request_value[0]); i++) {
+  const char *item = request_value[i];
+  printf("Item %d: %s\n", i + 1, item);
+}
 
 char url[256];
 char *token = NULL;
