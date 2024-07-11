@@ -33,7 +33,7 @@ Configure the following values in your code:
 To test, run `main.cpp`. To update telemetry values, use the following command:
 
 ```bash
-curl -v -X POST --data '{"{value_name}": {value}' http://{thingsboard_server}:{port}/api/v1/{device_ID}/telemetry --header "Content-Type:application/json"
+curl -v -X POST --data '"{value_name}": {value}' http://{thingsboard_server}:{port}/api/v1/{device_ID}/telemetry --header "Content-Type:application/json"
 ```
 
 - Replace `{value_name}` and `{value}` with some data.
