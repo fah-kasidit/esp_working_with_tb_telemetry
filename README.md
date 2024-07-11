@@ -13,20 +13,29 @@ Configure the following values in your code:
     const char *password = "{wifi_password}";
     ```
 
-2. URL and token configuration:
+2. User name and password configuration:
 
     ```cpp
-    const char *url = "http://{thingsboard_server}:{port}/api/plugins/telemetry/DEVICE/{device_ID}/values/timeseries?keys={name_of_value}";
-    const char *token = "{token}";
+    const char *tb_username = "{your_username}";
+    const char *tb_password = "{your_password}";
     ```
 
-    - Replace `{thingsboard_server}` and `{port}` with your ThingsBoard server details.
-    - Replace `{device_ID}` with your device ID from ThingsBoard.
-    - `{token}` can be obtained using the following command:
+3. Thingsboard server and device ID configuration:
 
-      ```bash
-      curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{"username":"{your_thingsboard_username}", "password":"{your_thingsboard_password}"}' 'https://{thingsboard_server}:{port}/api/auth/login'
-      ```
+    ```cpp
+    const char *thingsboard_server = "{Thingsboard_server}";
+    const char *device_id = "{device_id}";
+    ```
+
+4. Value pulling configuration:
+
+    ```cpp
+    const char *request_value[] = {"{value_1}", "{value_2}"};
+    String response_value[ {Quantity_of_request_value} ];
+    ```
+
+    - Replace `{Quantity_of_request_value}` with quantity of request value.
+    - `{Quantity_of_request_value}` must be integer.
 
 ## Testing
 

@@ -11,11 +11,12 @@ const char *tb_password = "tni-ksd";
 
 const char *thingsboard_server = "http://143.198.195.172:9090";
 const char *device_id = "fe9a0f60-38ff-11ef-bff0-835a0b74444f";
-char url[256];
-char *token = NULL;
 
 const char *request_value[] = {"distance", "status"};
 String response_value[100];
+
+char url[256];
+char *token = NULL;
 
 String payload;
 int http_response_code;
