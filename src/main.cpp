@@ -2,6 +2,10 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 
+String payload;
+int httpResponseCode;
+float distance;
+
 const char *ssid = "NDRS-Wongsawang";
 const char *password = "ndrs_2010";
 
@@ -30,30 +34,30 @@ void fetch_distance(void *pvParameters)
       http.addHeader("Content-Type", "application/json");
       http.addHeader("X-Authorization", String("Bearer ") + token);
 
-      int httpResponseCode = http.GET();
+      httpResponseCode = http.GET();
 
       if (httpResponseCode > 0)
       {
-        String payload = http.getString();
+        payload = http.getString();
         // Serial.println("HTTP Response code: " + String(httpResponseCode));
         // Serial.println("Response payload: " + payload);
 
         DynamicJsonDocument doc(1024);
         deserializeJson(doc, payload);
 
-        float distance = doc["distance"][0]["value"].as<float>();
+        distance = doc["distance"][0]["value"].as<float>();
         Serial.println("Distance: " + String(distance));
       }
       else
       {
         Serial.println("Error on HTTP request");
       }
-
       http.end();
     }
     else
     {
       Serial.println("WiFi Disconnected");
+      connect_to_wifi();
     }
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
@@ -69,4 +73,6 @@ void setup()
 
 void loop()
 {
+  if (WiFi.status() != WL_CONNECTED)
+    connect_to_wifi();
 }
