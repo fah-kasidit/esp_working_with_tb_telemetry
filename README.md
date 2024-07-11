@@ -36,6 +36,7 @@ Configure the following values in your code:
 
     - Replace `{Quantity_of_request_value}` with quantity of request value.
     - `{Quantity_of_request_value}` must be integer.
+    - `response_value[]` will recive the response, respectively.
 
 ## Testing
 
