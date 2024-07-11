@@ -24,7 +24,7 @@ Configure the following values in your code:
     - Replace `{device_ID}` with your device ID from ThingsBoard.
     - `{token}` can be obtained using the following command:
 
-      ```bash 
+      ```bash
       curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{"username":"{your_thingsboard_username}", "password":"{your_thingsboard_password}"}' 'https://{thingsboard_server}:{port}/api/auth/login'
       ```
 
